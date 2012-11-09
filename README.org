@@ -1,3 +1,5 @@
+#+SETUPFILE: "doc/basho-doc-style.iorg"
+
 Erlus is a REST based Lookup Service. It is written in Erlang and uses Webmachine and Mochiweb. 
 
 * Getting Started
