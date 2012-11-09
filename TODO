@@ -1,0 +1,4 @@
+* Write unit tests to check what happens on good and bad cases.
+* Write a default entry page that returns the links to the register and renew resources
+* Specify the IP to use instead of localhost on urls.
+* Client side package to interact with a set of Erlus servers.

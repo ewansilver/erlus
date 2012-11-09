@@ -1,0 +1,33 @@
+%%-*- mode: erlang -*-
+{application, erlus,
+ [
+  {description, "erlus"},
+  {vsn, "1"},
+  {modules, [
+             erlus,
+             erlus_app,
+             erlus_sup,
+             entity_resource,
+             entrance_resource,
+             find_resource,
+             register_resource,
+             matcher,
+             matcher_sup,
+             id_generator,
+             id_generator_sup,
+             json_entry,
+             rfc4627,
+             utils,
+             links
+            ]},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  crypto,
+                  mochiweb,
+                  webmachine
+                 ]},
+  {mod, { erlus_app, []}},
+  {env, []}
+ ]}.

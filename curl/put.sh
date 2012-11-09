@@ -1,0 +1,1 @@
+curl -v -X PUT http://localhost:8000/entity/YS/3Bo1yVYDlcvxmbvtgLg== -H "Content-Type: application/json" --data-binary '{"lease":999999999999}'

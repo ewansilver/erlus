@@ -1,0 +1,1 @@
+curl -v -X DELETE http://localhost:8000/entity/YS/3Bo1yVYDlcvxmbvtgLg==

@@ -1,0 +1,1 @@
+erl -pa ../ebin ../deps/webmachine/ebin ../deps/mochiweb/ebin -boot start_sasl -s erlus
