@@ -25,7 +25,7 @@ cd erlus
 - Start the Erlus node:
 #+BEGIN_EXAMPLE
 ./scripts/start.sh
-#+END_EXAMPLEs
+#+END_EXAMPLE
 
 The Erlus application should now be running in an Erlang VM.
 
