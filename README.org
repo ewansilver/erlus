@@ -6,11 +6,26 @@ Erlus is a REST based Lookup Service. It is written in Erlang and uses Webmachin
 
 To run an Erlus node:
 - Make sure you have a copy of Erlang installed. Basho have a good Linux/Mac [[https://wiki.basho.com/display/RIAK/Installing+Erlang|tutorial]]. Windows binaries are available from [[http://erlang.org/download.html|Erlang.org]]
-- Get a copy of the Mercurial repository:  //**hg clone https://bitbucket.org/erlus/erlus **//
-- Go into the downloaded directory: //**cd erlus**//
-- Run rebar to get the dependencies: //**./rebar get-deps**//
-- Run rebar to compile the erlang code into the ebin dir: //**./rebar compile**//
-- Start the Erlus node: //**./scripts/start.sh**//
+- Get a copy of the git repository:
+#+BEGIN_EXAMPLE
+git clone https://github.com/ewansilver/erlus
+#+END_EXAMPLE
+- Go into the downloaded directory:
+#+BEGIN_EXAMPLE
+cd erlus
+#+END_EXAMPLE
+- Run rebar to get the dependencies:
+#+BEGIN_EXAMPLE
+./rebar get-deps
+#+END_EXAMPLE
+- Run rebar to compile the erlang code into the ebin dir:
+#+BEGIN_EXAMPLE
+./rebar compile
+#+END_EXAMPLE
+- Start the Erlus node:
+#+BEGIN_EXAMPLE
+./scripts/start.sh
+#+END_EXAMPLEs
 
 The Erlus application should now be running in an Erlang VM.
 
