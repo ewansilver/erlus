@@ -1,1 +1,152 @@
-Erlus is a REST based lookup service. It is built upon Webmachine and Mochiweb.
+Erlus is a REST based Lookup Service. It is written in Erlang and uses Webmachine and Mochiweb. 
+
+* Getting Started
+
+To run an Erlus node:
+- Make sure you have a copy of Erlang installed. Basho have a good Linux/Mac [[https://wiki.basho.com/display/RIAK/Installing+Erlang|tutorial]]. Windows binaries are available from [[http://erlang.org/download.html|Erlang.org]]
+- Get a copy of the Mercurial repository:  //**hg clone https://bitbucket.org/erlus/erlus **//
+- Go into the downloaded directory: //**cd erlus**//
+- Run rebar to get the dependencies: //**./rebar get-deps**//
+- Run rebar to compile the erlang code into the ebin dir: //**./rebar compile**//
+- Start the Erlus node: //**./scripts/start.sh**//
+
+The Erlus application should now be running in an Erlang VM.
+
+Example shell scripts using Curl are available in /curl.
+
+* REST interface
+
+By default the Erlus node listens for http connections on port 8000 on all available interfaces. It uses JSON formatted data structure called an Entry.
+
+An entry consists of a set of keys, an arbitrary data body and a lease time. Keys are a collection of name/value pairs and allow a client to match for a sub set of the keys. Entries are registered with an Erlus node for a time period - known as a lease. When an entry is registered the Erlus node will tell the registering client how long it will hold the entry for (in milliseconds). If the client wants to retain the entry in the Erlus node then it is the clients responsibility to renew the lease before it expires. If the client does not renew the lease then the lease will expire and the Erlus node will remove the entry.
+
+The leasing mechanism allows us to use an Erlus node to build a self correcting system. 
+
+* Links
+
+/register - POST : attempt to place an Entry into the Erlus server via a JSON encoded body. If succesful the Server will respond with a 200 status code and a JSON body outlining the URI to manage the new resource along with a lease time, specified in milliseconds.
+
+** Request 
+
+#+BEGIN_EXAMPLE
+POST /register HTTP/1.1
+User-Agent: curl/7.19.7 (i486-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
+Host: 192.168.0.24:8000
+Accept: */*
+Content-Type: application/json
+Content-Length: 118
+
+{"entry":{"keys":{"application":"poller","type":"dev"},"data":"what ever you think the data should be","lease":60000}}
+#+END_EXAMPLE
+
+** Response
+
+#+BEGIN_EXAMPLE
+HTTP/1.1 200 OK
+Server: MochiWeb/1.1 WebMachine/1.7.1 (participate in the frantic)
+Date: Thu, 05 Aug 2010 14:37:43 GMT
+Content-Type: application/json
+Content-Length: 77
+
+{"lease":60000,"links":{"self":"http://192.168.0.24:8000/entity/YS/3Bo1yVYDlcvxmbvtgLg==","self":"http://192.168.0.6:8000/entity/YS/3Bo1yVYDlcvxmbvtgLg=="}}
+#+END_EXAMPLE
+
+The "links" element returns a list of URIs that the resource is available on. The URI tuples are of the format relationship:URI. The current relationships are "self", which denotes the actual URI to use. We will call this the {ENTITY_URI}.
+ 
+{ENTITY_URI} - PUT : attempt to renew the lease on the specified Entry via a JSON encoded body that outlines the requested lease time, in milliseconds.. If successful the Server will respond with a 200 status code and a JSON body outlining the URI to manage the new resource along with the lease time that was actually allocated, specified in milliseconds.
+
+** Request
+
+#+BEGIN_EXAMPLE
+PUT /entity/YS/3Bo1yVYDlcvxmbvtgLg== HTTP/1.1
+User-Agent: curl/7.19.7 (i486-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
+Host: 192.168.0.24:8000
+Accept: */*
+Content-Type: application/json
+Content-Length: 22
+
+{"lease":999999999999}
+#+END_EXAMPLE
+
+** Response
+
+#+BEGIN_EXAMPLE
+HTTP/1.1 200 OK
+Vary: Accept
+Server: MochiWeb/1.1 WebMachine/1.7.1 (participate in the frantic)
+Date: Thu, 05 Aug 2010 14:38:10 GMT
+Content-Type: application/json
+Content-Length: 119
+
+{"entry":{"keys":{"type":"dev","application":"poller"},"data":"what ever you think the data should be","lease":899999}}
+#+END_EXAMPLE
+
+{ENTITY_URI} - GET : retrieve the named entity. If succesful the JSON encoded body with the remaining lease is returned.
+
+** Request
+
+#+BEGIN_EXAMPLE
+GET /entity/YS/3Bo1yVYDlcvxmbvtgLg== HTTP/1.1
+User-Agent: curl/7.19.7 (i486-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
+Host: 192.168.0.24:8000
+Accept: */*
+#+END_EXAMPLE
+
+** Response
+
+#+BEGIN_EXAMPLE
+HTTP/1.1 200 OK
+Vary: Accept
+Server: MochiWeb/1.1 WebMachine/1.7.1 (participate in the frantic)
+Date: Thu, 05 Aug 2010 14:39:45 GMT
+Content-Type: application/json
+Content-Length: 119
+
+{"entry":{"keys":{"type":"dev","application":"poller"},"data":"what ever you think the data should be","lease":805310}}
+#+END_EXAMPLE
+
+{ENTITY_URI} - DELETE : delete the  the named entity. If succesful a 204 No Content status code is returned. A subsequent GET call to the entity URI will return a 404 Object Not Found status code.
+
+** Request
+
+#+BEGIN_EXAMPLE
+DELETE /entity/YS/3Bo1yVYDlcvxmbvtgLg== HTTP/1.1
+User-Agent: curl/7.19.7 (i486-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
+Host: 192.168.0.24:8000
+Accept: */*
+#+END_EXAMPLE
+
+** Response
+
+#+BEGIN_EXAMPLE
+HTTP/1.1 204 No Content
+Vary: Accept
+Server: MochiWeb/1.1 WebMachine/1.7.1 (participate in the frantic)
+Date: Thu, 05 Aug 2010 14:40:02 GMT
+Content-Type: application/json
+Content-Length: 0
+#+END_EXAMPLE
+
+/find?/{NAME}={VALUE}&amp;{N2}={V2}.... - GET : find any entries that match the supplied query string parameters. A list of the entries will be returned. If no entries can be found then an empty list will be supplied.
+
+** Request
+
+#+BEGIN_EXAMPLE
+GET /find?application=poller HTTP/1.1
+User-Agent: curl/7.19.7 (i486-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
+Host: 192.168.0.24:8000
+Accept: */*
+#+END_EXAMPLE
+
+**Response
+
+#+BEGIN_EXAMPLE
+HTTP/1.1 200 OK
+Vary: Accept
+Server: MochiWeb/1.1 WsebMachine/1.7.1 (participate in the frantic)
+Date: Thu, 05 Aug 2010 14:53:26 GMT
+Content-Type: application/json
+Content-Length: 139
+
+{"size":1,"entries":{"entry":{"keys":{"type":"dev","application":"poller"},"data":"what ever you think the data should be","lease":44050}}}
+#+END_EXAMPLE
